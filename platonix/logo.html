@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>platonic solids</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#selectors {
+				display: inline-block;
+    		margin: 10px auto;
+				border-style: none;
+				border-width: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="width: 100%; text-align: center;">
+			<div id="selectors">
+				<select id="select_0" onchange="combo()">
+					<option value="0">none</option>
+					<option value="4">tetrahedron</option>
+					<option value="6" selected>hexahedron</option>
+					<option value="8">octahedron</option>
+					<option value="12">dodecahedron</option>
+					<option value="20">icosahedron</option>
+				</select>
+				<select id="select_1" onchange="combo()">
+					<option value="0">none</option>
+					<option value="4">tetrahedron</option>
+					<option value="6">hexahedron</option>
+					<option value="8">octahedron</option>
+					<option value="12" selected>dodecahedron</option>
+					<option value="20">icosahedron</option>
+				</select>
+			</div>
+		</div>
+
+		<!--
+		<p id="demo"></p>
+		<script>
+		document.getElementById("demo").innerHTML = "message";
+		</script>
+		-->
+
+		<script src="three.min.js"></script>
+		<script src="Projector.js"></script>
+		<script src="CanvasRenderer.js"></script>
+		<!-- <script src="js/libs/stats.min.js"></script> -->
+
+		<script>
+
+var container; // , stats;
+
+var camera, scene, renderer, info;
+
+var tetrahedron_0, tetra_0, tetra_0_lines, tetrahedron_1, tetra_1, tetra_1_lines, hexa, hexa_lines, hexahedron, octa, octa_h, octahedron, ratio, hh, dodeca_0, dodeca_0_lines, dodecahedron_0, dodeca_1, iratio, ihh, icosa_0, icosa_0_lines, dodecahedron_0, icosa_1;
+
+var targetRotationX = 0;
+var targetRotationXOnMouseDown = 0;
+
+var targetRotationY = 0;
+var targetRotationYOnMouseDown = 0;
+
+var targetQuat = new THREE.Quaternion();
+
+var mouseX = 0;
+var mouseXOnMouseDown = 0;
+var oldx;
+
+var mouseY = 0;
+var mouseYOnMouseDown = 0;
+var oldy;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = (window.innerHeight - document.getElementById("selectors").offsetHeight) / 2;
+
+var axis, mag;
+//////////////////////////////////
+
+var third_sqrt = Math.pow((1./3.),(1./2.));
+
+tetra_0 = [
+	third_sqrt, third_sqrt, third_sqrt,
+	-third_sqrt, -third_sqrt, third_sqrt,
+	-third_sqrt, third_sqrt, -third_sqrt,
+	third_sqrt, -third_sqrt, -third_sqrt
+];
+
+tetra_0_lines = [
+	0, 1,    0, 2,
+	0, 3,    1, 2,
+	1, 3,    2, 3
+];
+
+tetra_1 = [
+	-third_sqrt / 3, -third_sqrt / 3, -third_sqrt / 3,
+	third_sqrt / 3, third_sqrt / 3, -third_sqrt / 3,
+	third_sqrt / 3, -third_sqrt / 3, third_sqrt / 3,
+	-third_sqrt / 3, third_sqrt / 3, third_sqrt / 3
+];
+
+tetra_1_lines = [
+	0, 1,    0, 2,
+  0, 3,    1, 2,
+	1, 3,    2, 3
+];
+
+hexa = [
+	third_sqrt, third_sqrt, third_sqrt,
+	-third_sqrt, third_sqrt, third_sqrt,
+	third_sqrt, -third_sqrt, third_sqrt,
+	-third_sqrt, -third_sqrt, third_sqrt,
+	third_sqrt, third_sqrt, -third_sqrt,
+	-third_sqrt, third_sqrt, -third_sqrt,
+	third_sqrt, -third_sqrt, -third_sqrt,
+	-third_sqrt, -third_sqrt, -third_sqrt
+];
+
+hexa_lines = [
+	0, 1,    0, 2,
+	0, 4,    1, 3,
+	1, 5,    2, 3,
+	2, 6,    3, 7,
+	4, 5,    4, 6,
+	5, 7,    6, 7
+];
+
+octa = [
+	0.0, 0.0, 1.0,
+	0.0, 1.0, 0.0,
+	1.0, 0.0, 0.0,
+	-1.0, 0.0, 0.0,
+	0.0, -1.0, 0.0,
+	0.0, 0.0, -1.0
+];
+
+octa_h = [
+	0, 1,    0, 2,
+	0, 3,    0, 4,
+	1, 2,    1, 3,
+	1, 5,    2, 4,
+	2, 5,    3, 4,
+	3, 5,    4, 5
+];
+
+ratio = (1.0 / ((Math.sqrt(3.0)/4.0) * (1.0 + Math.sqrt(5.0))))/2.0;
+
+hh = ((1.0/4.0) * (3.0 + Math.sqrt(5.0))) / ((Math.sqrt(3.0)/4.0) * (1.0 + Math.sqrt(5.0)));
+
+dodeca_0 = [
+	ratio, 0.0, hh,
+	-ratio, 0.0, hh,
+
+	third_sqrt, third_sqrt, third_sqrt,
+	-third_sqrt, third_sqrt, third_sqrt,
+	third_sqrt, -third_sqrt, third_sqrt,
+	-third_sqrt, -third_sqrt, third_sqrt,
+
+	0.0, hh, ratio,
+	0.0, -hh, ratio,
+
+	hh, ratio, 0.0,
+	-hh, ratio, 0.0,
+	hh, -ratio, 0.0,
+	-hh, -ratio, 0.0,
+
+	0.0, hh, -ratio,
+	0.0, -hh, -ratio,
+
+	third_sqrt, third_sqrt, -third_sqrt,
+	-third_sqrt, third_sqrt, -third_sqrt,
+	third_sqrt, -third_sqrt, -third_sqrt,
+	-third_sqrt, -third_sqrt, -third_sqrt,
+
+	ratio, 0.0, -hh,
+	-ratio, 0.0, -hh
+];
+
+dodeca_0_lines = [
+	0, 1,    0, 2,
+	0, 4,    1, 3,
+	1, 5,    2, 6,
+	2, 8,    3, 6,
+	3, 9,    4, 7,
+	4, 10,    5, 7,
+	5, 11,    6, 12,
+	7, 13,    8, 10,
+	8, 14,    9, 11,
+	9, 15,    10, 16,
+	11, 17,    12, 14,
+	12, 15,    13, 16,
+	13, 17,    14, 18,
+	15, 19,    16, 18,
+	17, 19,    18, 19
+];
+
+dodeca_1 = [
+	0.0, ratio, hh,
+	0.0, -ratio, hh,
+
+	third_sqrt, third_sqrt, third_sqrt,
+	-third_sqrt, third_sqrt, third_sqrt,
+	third_sqrt, -third_sqrt, third_sqrt,
+	-third_sqrt, -third_sqrt, third_sqrt,
+
+	hh, 0.0, ratio,
+	-hh, 0.0, ratio,
+
+	ratio, hh, 0.0,
+	-ratio, hh, 0.0,
+	ratio, -hh, 0.0,
+	-ratio, -hh, 0.0,
+
+	hh, 0.0, -ratio,
+	-hh, 0.0, -ratio,
+
+	third_sqrt, third_sqrt, -third_sqrt,
+	-third_sqrt, third_sqrt, -third_sqrt,
+	third_sqrt, -third_sqrt, -third_sqrt,
+	-third_sqrt, -third_sqrt, -third_sqrt,
+
+	0.0, ratio, -hh,
+	0.0, -ratio, -hh
+];
+
+iratio = (1.0/Math.sin((2.0*Math.PI)/5.0))/2.0;
+ihh = Math.cos(Math.PI/5.)/Math.sin((2.*Math.PI)/5.);
+
+icosa_0 = [
+	0.0, iratio, ihh,
+	0.0, -iratio, ihh,
+
+	ihh, 0.0, iratio,
+	-ihh, 0.0, iratio,
+
+	iratio, ihh, 0.0,
+	-iratio, ihh, 0.0,
+	iratio, -ihh, 0.0,
+	-iratio, -ihh, 0.0,
+
+	ihh, 0.0, -iratio,
+	-ihh, 0.0, -iratio,
+
+	0.0, iratio, -ihh,
+	0.0, -iratio, -ihh
+];
+
+icosa_0_lines = [
+	0, 1,    0, 2,
+	0, 3,    0, 4,
+	0, 5,    1, 2,
+	1, 3,    1, 6,
+	1, 7,    2, 4,
+	2, 6,    2, 8,
+	3, 5,    3, 7,
+	3, 9,    4, 5,
+	4, 8,    4, 10,
+	5, 9,    5, 10,
+	6, 7,    6, 8,
+	6, 11,    7, 9,
+	7, 11,    8, 10,
+	8, 11,    9, 10,
+	9, 11,    10, 11
+];
+
+icosa_1 = [
+	iratio, 0.0, ihh,
+	-iratio, 0.0, ihh,
+
+	0.0, ihh, iratio,
+	0.0, -ihh, iratio,
+
+	ihh, iratio, 0.0,
+	ihh, -iratio, 0.0,
+	-ihh, iratio, 0.0,
+	-ihh, -iratio, 0.0,
+
+	0.0, ihh, -iratio,
+	0.0, -ihh, -iratio,
+
+	iratio, 0.0, -ihh,
+	-iratio, 0.0, -ihh
+];
+
+//# GOLDEN RATIO
+var gr = ((1 + Math.pow(5, 0.5)) / 2);
+
+//################################################################
+//# TETRAHEDRON edge and half edge
+var h04_a = 1 / Math.pow((3/8), 0.5);
+var h04_x = h04_a / 2;
+
+//# TETRAHEDRON radius of a circumscribed sphere
+var h04_ru = h04_a * Math.pow((3/8), 0.5);
+
+//# TETRAHEDRON radius of a inscribed sphere
+var h04_ri = h04_a / Math.pow(24, 0.5);
+
+//# TETRAHEDRON midradius
+var h04_rm = h04_a / Math.pow(8, 0.5);
+
+//# TETRAHEDRON area
+var h04_sa = Math.pow(h04_a, 2) * Math.pow(3, 0.5);
+
+//# TETRAHEDRON volume
+var h04_v = Math.pow(h04_a, 3) / (6 * Math.pow(2, 0.5));
+
+//################################################################
+//# HEXAHEDRON edge and half edge
+var h06_a = 2 / Math.pow(3, 0.5);
+var h06_x = h06_a / 2;
+
+//# HEXAHEDRON radius of a circumscribed sphere
+var h06_ru = h06_a * (Math.pow(3, 0.5) / 2);
+
+//# HEXAHEDRON radius of a inscribed sphere
+var h06_ri = h06_a / 2;
+
+//# HEXAHEDRON midradius
+var h06_rm = h06_a / Math.pow(2, 0.5);
+
+//# HEXAHEDRON area
+var h06_sa = 6 * Math.pow(h06_a, 2);
+
+//# HEXAHEDRON volume
+var h06_v = Math.pow(h06_a, 3);
+
+//################################################################
+//# OCTAHEDRON edge and half edge
+var h08_a = 2 / Math.pow(2, 0.5);
+var h08_x = h08_a / 2;
+
+//# OCTAHEDRON radius of a circumscribed sphere
+var h08_ru = h08_a * (Math.pow(2, 0.5) / 2);
+
+//# OCTAHEDRON radius of a inscribed sphere
+var h08_ri = (h08_a / 6) * Math.pow(6, 0.5);
+
+//# OCTAHEDRON midradius
+var h08_rm = h08_a / 2;
+
+//# OCTAHEDRON area
+var h08_sa = Math.pow(h08_a, 2) * 2 * Math.pow(3, 0.5);
+
+//# OCTAHEDRON volume
+var h08_v = Math.pow(h08_a, 3) * (1/3) * Math.pow(2, 0.5);
+
+//################################################################
+//# DODECAHEDRON edge and half edge
+var h12_a = 1 / ((Math.pow(3, 0.5) / 2) * ( (1 + Math.pow(5, 0.5)) / 2));
+h12_x = h12_a / 2;
+
+//# DODECAHEDRON radius of a circumscribed sphere
+var h12_ru = h12_a * (Math.pow(3, 0.5) / 2) * ((1 + Math.pow(5, 0.5)) / 2);
+h12_ru = h12_a * (Math.pow(3, 0.5) / 2) * gr;
+
+//# DODECAHEDRON radius of a inscribed sphere
+var h12_ri = h12_a * (Math.pow(((1 + Math.pow(5, 0.5)) / 2), 2) / (2 * Math.pow((3 - ((1 + Math.pow(5, 0.5)) / 2)), 0.5)));
+h12_ri = h12_a * (Math.pow(gr, 2) / (2 * Math.pow((3 - gr), 0.5)));
+
+//# DODECAHEDRON midradius
+var h12_rm = h12_a * (Math.pow(((1 + Math.pow(5, 0.5)) / 2), 2) / 2);
+h12_rm = h12_a * (Math.pow(gr, 2) / 2);
+
+//# DODECAHEDRON area
+var h12_sa = 3 * Math.pow((25 + 10 * Math.pow(5, 0.5)), 0.5) * Math.pow(h12_a, 2);
+
+//# DODECAHEDRON volume
+var h12_v = ((15 + 7 * Math.pow(5, 0.5)) / 4) * Math.pow(h12_a, 3);
+
+var h12_fc = 0.2 * Math.PI;
+var h12_fe = 0.3 * Math.PI;
+
+//################################################################
+//# ICOSAHEDRON edge and half edge
+var h20_a = 1 / (Math.pow((gr * Math.pow(5, 0.5)), 0.5) / 2);
+var h20_x = h20_a / 2;
+
+//# ICOSAHEDRON radius of a circumscribed sphere
+var h20_ru = h20_a * (Math.pow((((1 + Math.pow(5, 0.5)) / 2) * Math.pow(5, 0.5)), 0.5) / 2);
+h20_ru = h20_a * (Math.pow((gr * Math.pow(5, 0.5)), 0.5) / 2);
+
+//# ICOSAHEDRON radius of a inscribed sphere
+var h20_ri = (h20_a * Math.pow(((1 + Math.pow(5, 0.5)) / 2), 2)) / (2 * Math.pow(3, 0.5));
+h20_ri = (h20_a * Math.pow(gr, 2)) / (2 * Math.pow(3, 0.5));
+
+//# ICOSAHEDRON midradius
+var h20_rm = (h20_a * ((1 + Math.pow(5, 0.5)) / 2)) / 2;
+h20_rm = (h20_a * gr) / 2;
+
+//# ICOSAHEDRON area
+var h20_sa = Math.pow(h20_a, 2) * 5 * Math.pow(3, 0.5);
+
+//# ICOSAHEDRON volume
+var h20_v = Math.pow(h20_a, 3) * (5 / 12) * (3 + Math.pow(5, 0.5));
+
+//################################################################
+
+init();
+animate();
+
+function vector_push( geom, lines, vects ) {
+	for ( var i = 0; i < lines.length; i += 1 ){
+		geom.vertices.push(
+			new THREE.Vector3(
+				vects[lines[i] * 3 + 0] * 200,
+				vects[lines[i] * 3 + 1] * 200,
+				vects[lines[i] * 3 + 2] * 200 )
+		);
+	};
+};
+
+function combo(){
+	var s_0 = document.getElementById("select_0").value;
+	var s_1 = document.getElementById("select_1").value;
+
+	switch(s_0) {
+		case '0':
+			if(s_1 == '4'){
+				scale_it([tetrahedron_0, 1]);
+			} else if (s_1 == '6'){
+				scale_it([hexahedron, 1]);
+			} else if (s_1 == '8'){
+				scale_it([octahedron, 1]);
+			} else if (s_1 == '12'){
+				scale_it([dodecahedron_0, 1]);
+			} else if (s_1 == '20'){
+				scale_it([icosahedron_0, 1]);
+			} else {
+				scale_it([]);
+			};
+  		break;
+
+		case '4':
+			if(s_1 == '4'){
+				scale_it([tetrahedron_0, 1, tetrahedron_1, 1]);
+			} else if (s_1 == '6'){
+				scale_it([tetrahedron_0, 1, hexahedron, 1/3]);
+			} else if (s_1 == '8'){
+				scale_it([tetrahedron_0, 1, octahedron, h06_ri]);
+			} else if (s_1 == '12'){
+				scale_it([tetrahedron_0, 1, dodecahedron_0, h04_ri]);
+			} else if (s_1 == '20'){
+				scale_it([tetrahedron_0, 1, icosahedron_0, h04_ri / h20_ri]);
+			} else {
+				scale_it([tetrahedron_0, 1]);
+			};
+			break;
+
+		case '6':
+			if(s_1 == '4'){
+				scale_it([hexahedron, 1, tetrahedron_0, 1]);
+			} else if (s_1 == '8'){
+				scale_it([hexahedron, 1, octahedron, h06_ri]);
+			} else if (s_1 == '12'){
+				scale_it([hexahedron, 1, dodecahedron_0, h06_ri / h12_rm]);
+			} else if (s_1 == '20'){
+				scale_it([hexahedron, 1, icosahedron_0, h06_ri / h20_rm]);
+			} else {
+				scale_it([hexahedron, 1]);
+			};
+			break;
+
+		case '8':
+			if(s_1 == '4'){
+				scale_it([octahedron, 1, tetrahedron_0, h08_ri]);
+			} else if (s_1 == '6'){
+				scale_it([octahedron, 1, hexahedron, h08_ri]);
+			} else if (s_1 == '12'){
+				scale_it([octahedron, 1, dodecahedron_0, h08_ri]);
+			} else if (s_1 == '20'){
+				scale_it([octahedron, 1, icosahedron_0, h08_ri / h20_ri]);
+			} else {
+				scale_it([octahedron, 1]);
+			};
+			break;
+
+		case '12':
+			if(s_1 == '4'){
+				scale_it([dodecahedron_0, 1, tetrahedron_0, 1]);
+			} else if (s_1 == '6'){
+				scale_it([dodecahedron_0, 1, hexahedron, 1]);
+			} else if (s_1 == '8'){
+				scale_it([dodecahedron_0, 1, octahedron, h12_rm]);
+			} else if (s_1 == '20'){
+				scale_it([dodecahedron_0, 1, icosahedron_0, h12_ri]);
+			} else {
+				scale_it([dodecahedron_0, 1]);
+			};
+			break;
+
+		case '20':
+			if(s_1 == '4'){
+				scale_it([icosahedron_0, 1, tetrahedron_0, h20_ri]);
+			} else if (s_1 == '6'){
+				scale_it([icosahedron_0, 1, hexahedron, h20_ri]);
+			} else if (s_1 == '8'){
+				scale_it([icosahedron_0, 1, octahedron, h20_rm]);
+			} else if (s_1 == '12'){
+				scale_it([icosahedron_0, 1, dodecahedron_0, h20_ri]);
+			} else {
+				scale_it([icosahedron_0, 1]);
+			};
+			break;
+	};
+};
+
+function scale_it(hedrons){
+	for(var i = 0; i < hedrons.length / 2; i += 1){
+		hedrons[i * 2].scale.set(hedrons[i * 2 + 1], hedrons[i * 2 + 1], hedrons[i * 2 + 1]);
+	};
+	add_it(hedrons);
+};
+
+function add_it(hedrons){
+
+	while(scene.children.length > 0){
+		scene.remove(scene.children[0]);
+	};
+
+	for(var i = 0; i < hedrons.length / 2; i += 1){
+		scene.add(hedrons[i * 2]);
+	};
+
+};
+
+function init() {
+
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / (window.innerHeight - document.getElementById("selectors").offsetHeight), 1, 1000 );
+	// camera.position.y = 150;
+	camera.position.z = 500;
+
+	scene = new THREE.Scene();
+
+	// TETRAHEDRON 0
+
+	var material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+
+	var geometry = new THREE.Geometry();
+	vector_push(geometry, tetra_0_lines, tetra_0);
+
+	tetrahedron_0 = new THREE.LineSegments( geometry, material );
+
+	// TETRAHEDRON 1
+
+	var tmaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+
+	var tgeometry = new THREE.Geometry();
+	vector_push(tgeometry, tetra_1_lines, tetra_1);
+
+	tetrahedron_1 = new THREE.LineSegments( tgeometry, tmaterial );
+
+	// HEXAHEDRON
+	var hexa_material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+	var hexa_geometry = new THREE.Geometry();
+	vector_push(hexa_geometry, hexa_lines, hexa);
+
+	hexahedron = new THREE.LineSegments( hexa_geometry, hexa_material );
+
+	// OCTAHEDRON
+
+	var octa_material = new THREE.LineBasicMaterial({ color: 0xff00ff });
+
+	var octa_geometry = new THREE.Geometry();
+	vector_push(octa_geometry, octa_h, octa);
+
+	octahedron = new THREE.LineSegments( octa_geometry, octa_material );
+
+  // DODECAHEDRON 0
+	var dodeca_0_material = new THREE.LineBasicMaterial({ color: 0x007f7f });
+
+	var dodeca_0_geometry = new THREE.Geometry();
+	vector_push(dodeca_0_geometry, dodeca_0_lines, dodeca_0);
+
+	dodecahedron_0 = new THREE.LineSegments( dodeca_0_geometry, dodeca_0_material );
+
+	// ICOSAHEDRON 0
+	var icosa_0_material = new THREE.LineBasicMaterial({ color: 0x7f7f00 });
+
+	var icosa_0_geometry = new THREE.Geometry();
+  vector_push(icosa_0_geometry, icosa_0_lines, icosa_0);
+
+  icosahedron_0 = new THREE.LineSegments( icosa_0_geometry, icosa_0_material );
+
+	////////////////////////////////
+  combo();
+	////////////////////////////////
+
+	renderer = new THREE.WebGLRenderer(); // CanvasRenderer
+	renderer.setClearColor( 0xffffff );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, (window.innerHeight - document.getElementById("selectors").offsetHeight));
+	container.appendChild( renderer.domElement );
+
+	container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+	container.addEventListener( 'touchstart', onDocumentTouchStart, false );
+	container.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+};
+
+function onWindowResize() {
+
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = (window.innerHeight - document.getElementById("selectors").offsetHeight) / 2;
+
+	camera.aspect = window.innerWidth / (window.innerHeight - document.getElementById("selectors").offsetHeight);
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, (window.innerHeight - document.getElementById("selectors").offsetHeight));
+
+};
+
+function onDocumentMouseDown( event ) {
+
+	event.preventDefault();
+
+	container.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	container.addEventListener( 'mouseup', onDocumentMouseUp, false );
+	container.addEventListener( 'mouseout', onDocumentMouseOut, false );
+
+	oldx = event.clientX;
+	oldy = event.clientY;
+
+};
+
+function onDocumentMouseMove( event ) {
+
+	newx = event.clientX;
+	newy = event.clientY;
+
+	axis = [(newy - oldy), (newx - oldx), 0];
+
+	mag = Math.pow(Math.pow(axis[0], 2) + Math.pow(axis[1], 2) + Math.pow(axis[2], 2), 0.5);
+
+	axis = new THREE.Vector3(axis[0] / mag, axis[1] / mag, axis[2] / mag);
+
+	targetQuat = ((new THREE.Quaternion()).setFromAxisAngle(axis, mag * 0.0075)).multiply(targetQuat);
+
+	targetQuat.normalize();
+
+	scene.quaternion.set(targetQuat.x, targetQuat.y, targetQuat.z, targetQuat.w);
+
+	oldx = newx;
+	oldy = newy;
+
+};
+
+function onDocumentMouseUp( event ) {
+	container.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+	container.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+	container.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+};
+
+function onDocumentMouseOut( event ) {
+	container.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+	container.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+	container.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+};
+
+function onDocumentTouchStart( event ) {
+
+	if ( event.touches.length === 1 ) {
+
+		event.preventDefault();
+
+		oldx = event.touches[ 0 ].pageX;
+    oldy = event.touches[ 0 ].pageY;
+	};
+};
+
+function onDocumentTouchMove( event ) {
+
+	if ( event.touches.length === 1 ) {
+
+		event.preventDefault();
+
+		newx = event.touches[ 0 ].pageX;
+		newy = event.touches[ 0 ].pageY;
+
+		axis = [(newy - oldy), (newx - oldx), 0];
+
+		mag = Math.pow(Math.pow(axis[0], 2) + Math.pow(axis[1], 2) + Math.pow(axis[2], 2), 0.5);
+
+		axis = new THREE.Vector3(axis[0] / mag, axis[1] / mag, axis[2] / mag);
+
+		targetQuat = ((new THREE.Quaternion()).setFromAxisAngle(axis, mag * 0.0075)).multiply(targetQuat);
+
+		targetQuat.normalize();
+
+		scene.quaternion.set(targetQuat.x, targetQuat.y, targetQuat.z, targetQuat.w);
+
+		oldx = newx;
+		oldy = newy;
+	};
+
+};
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	render();
+	// stats.update();
+};
+
+function render() {
+
+	renderer.render( scene, camera );
+
+};
+
+		</script>
+	</body>
+</html>
