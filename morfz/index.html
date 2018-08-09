@@ -1,0 +1,480 @@
+<html>
+<head>
+	<title>Hello World</title>
+</head>
+<body>
+
+<script src="three.js"></script>
+
+<!-- <div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div> -->
+<script>
+var camera, scene, renderer, geometry, material, mesh;
+var ticka = 0;
+var last_tick = 0;
+var all_ph, current_ph, next_ph;
+var change = false;
+
+// truncated cuboctahedron values
+var s = 1;
+var ns = -1;
+var m = 1 + Math.sqrt(2); // 2.414213562373095
+var l = 1 + (2 * Math.sqrt(2)); // 3.8284271247461903
+var nm = -1 * m; // -2.414213562373095
+var nl = -1 * l; // -3.8284271247461903
+
+// truncated cuboctahedron
+var tcoh_p = [
+              [nm,  l,  s], [ns,  l,  m], [ s,  l,  m], [ m,  l,  s],
+[nl,  m,  s],               [ns,  m,  l], [ s,  m,  l],               [ l,  m,  s],
+[nl,  s,  m], [nm,  s,  l],                             [ m,  s,  l], [ l,  s,  m],
+[nl, ns,  m], [nm, ns,  l],                             [ m, ns,  l], [ l, ns,  m],
+[nl, nm,  s],               [ns, nm,  l], [ s, nm,  l],               [ l, nm,  s],
+              [nm, nl,  s], [ns, nl,  m], [ s, nl,  m], [ m, nl,  s],
+
+              [nm,  l, ns], [ns,  l, nm], [ s,  l, nm], [ m,  l, ns],
+[nl,  m, ns],               [ns,  m, nl], [ s,  m, nl],               [ l,  m, ns],
+[nl,  s, nm], [nm,  s, nl],                             [ m,  s, nl], [ l,  s, nm],
+[nl, ns, nm], [nm, ns, nl],                             [ m, ns, nl], [ l, ns, nm],
+[nl, nm, ns],               [ns, nm, nl], [ s, nm, nl],               [ l, nm, ns],
+              [nm, nl, ns], [ns, nl, nm], [ s, nl, nm], [ m, nl, ns]
+];
+
+// tetrahedron 0
+var t0_p = [
+              [-2,  2, -2], [ 2,  2,  2], [ 2,  2,  2], [ 2,  2,  2],
+[-2,  2, -2],               [ 2,  2,  2], [ 2,  2,  2],               [ 2,  2,  2],
+[-2, -2,  2], [-2, -2,  2],                             [ 2,  2,  2], [ 2,  2,  2],
+[-2, -2,  2], [-2, -2,  2],                             [ 2,  2,  2], [ 2,  2,  2],
+[-2, -2,  2],               [-2, -2,  2], [-2, -2,  2],               [ 2, -2, -2],
+              [-2, -2,  2], [-2, -2,  2], [-2, -2,  2], [ 2, -2, -2],
+
+              [-2,  2, -2], [-2,  2, -2], [-2,  2, -2], [ 2,  2,  2],
+[-2,  2, -2],               [-2,  2, -2], [-2,  2, -2],               [ 2,  2,  2],
+[-2,  2, -2], [-2,  2, -2],                             [ 2, -2, -2], [ 2, -2, -2],
+[-2,  2, -2], [-2,  2, -2],                             [ 2, -2, -2], [ 2, -2, -2],
+[-2, -2,  2],               [ 2, -2, -2], [ 2, -2, -2],               [ 2, -2, -2],
+              [-2, -2,  2], [ 2, -2, -2], [ 2, -2, -2], [ 2, -2, -2]
+];
+
+// tetrahedron 1
+var t1_p = [
+              [-2,  2,  2], [-2,  2,  2], [-2,  2,  2], [ 2,  2, -2],
+[-2,  2,  2],               [-2,  2,  2], [-2,  2,  2],               [ 2,  2, -2],
+[-2,  2,  2], [-2,  2,  2],                             [ 2, -2,  2], [ 2, -2,  2],
+[-2,  2,  2], [-2,  2,  2],                             [ 2, -2,  2], [ 2, -2,  2],
+[-2, -2, -2],               [ 2, -2,  2], [ 2, -2,  2],               [ 2, -2,  2],
+              [-2, -2, -2], [ 2, -2,  2], [ 2, -2,  2], [ 2, -2,  2],
+
+              [-2,  2,  2], [ 2,  2, -2], [ 2,  2, -2], [ 2,  2, -2],
+[-2,  2,  2],               [ 2,  2, -2], [ 2,  2, -2],               [ 2,  2, -2],
+[-2, -2, -2], [-2, -2, -2],                             [ 2,  2, -2], [ 2,  2, -2],
+[-2, -2, -2], [-2, -2, -2],                             [ 2,  2, -2], [ 2,  2, -2],
+[-2, -2, -2],               [-2, -2, -2], [-2, -2, -2],               [ 2, -2,  2],
+              [-2, -2, -2], [-2, -2, -2], [-2, -2, -2], [ 2, -2,  2]
+];
+
+// cube
+var c_p = [
+              [-2,  2,  2], [-2,  2,  2], [ 2,  2,  2], [ 2,  2,  2],
+[-2,  2,  2],               [-2,  2,  2], [ 2,  2,  2],               [ 2,  2,  2],
+[-2,  2,  2], [-2,  2,  2],                             [ 2,  2,  2], [ 2,  2,  2],
+[-2, -2,  2], [-2, -2,  2],                             [ 2, -2,  2], [ 2, -2,  2],
+[-2, -2,  2],               [-2, -2,  2], [ 2, -2,  2],               [ 2, -2,  2],
+              [-2, -2,  2], [-2, -2,  2], [ 2, -2,  2], [ 2, -2,  2],
+
+              [-2,  2, -2], [-2,  2, -2], [ 2,  2, -2], [ 2,  2, -2],
+[-2,  2, -2],               [-2,  2, -2], [ 2,  2, -2],               [ 2,  2, -2],
+[-2,  2, -2], [-2,  2, -2],                             [ 2,  2, -2], [ 2,  2, -2],
+[-2, -2, -2], [-2, -2, -2],                             [ 2, -2, -2], [ 2, -2, -2],
+[-2, -2, -2],               [-2, -2, -2], [ 2, -2, -2],               [ 2, -2, -2],
+              [-2, -2, -2], [-2, -2, -2], [ 2, -2, -2], [ 2, -2, -2]
+];
+
+// octahedron
+var oh_p = [
+              [ 0,  3,  0], [ 0,  3,  0], [ 0,  3,  0], [ 0,  3,  0],
+[-3,  0,  0],               [ 0,  0,  3], [ 0,  0,  3],               [ 3,  0,  0],
+[-3,  0,  0], [ 0,  0,  3],                             [ 0,  0,  3], [ 3,  0,  0],
+[-3,  0,  0], [ 0,  0,  3],                             [ 0,  0,  3], [ 3,  0,  0],
+[-3,  0,  0],               [ 0,  0,  3], [ 0,  0,  3],               [ 3,  0,  0],
+              [ 0, -3,  0], [ 0, -3,  0], [ 0, -3,  0], [ 0, -3,  0],
+
+              [ 0,  3,  0], [ 0,  3,  0], [ 0,  3,  0], [ 0,  3,  0],
+[-3,  0,  0],               [ 0,  0, -3], [ 0,  0, -3],               [ 3,  0,  0],
+[-3,  0,  0], [ 0,  0, -3],                             [ 0,  0, -3], [ 3,  0,  0],
+[-3,  0,  0], [ 0,  0, -3],                             [ 0,  0, -3], [ 3,  0,  0],
+[-3,  0,  0],               [ 0,  0, -3], [ 0,  0, -3],               [ 3,  0,  0],
+              [ 0, -3,  0], [ 0, -3,  0], [ 0, -3,  0], [ 0, -3,  0]
+];
+
+
+// truncated tetrahedron 0
+var tt0_p = [
+              [-1,  3, -1], [ 1,  3,  1], [ 1,  3,  1], [ 1,  3,  1],
+[-3,  1, -1],               [ 1,  1,  3], [ 1,  1,  3],               [ 3,  1,  1],
+[-3, -1,  1], [-1, -1,  3],                             [ 1,  1,  3], [ 3,  1,  1],
+[-3, -1,  1], [-1, -1,  3],                             [ 1,  1,  3], [ 3,  1,  1],
+[-3, -1,  1],               [-1, -1,  3], [-1, -1,  3],               [ 3, -1, -1],
+              [-1, -3,  1], [-1, -3,  1], [-1, -3,  1], [ 1, -3, -1],
+
+              [-1,  3, -1], [-1,  3, -1], [-1,  3, -1], [ 1,  3,  1],
+[-3,  1, -1],               [-1,  1, -3], [-1,  1, -3],               [ 3,  1,  1],
+[-3,  1, -1], [-1,  1, -3],                             [ 1, -1, -3], [ 3, -1, -1],
+[-3,  1, -1], [-1,  1, -3],                             [ 1, -1, -3], [ 3, -1, -1],
+[-3, -1,  1],               [ 1, -1, -3], [ 1, -1, -3],               [ 3, -1, -1],
+              [-1, -3,  1], [ 1, -3, -1], [ 1, -3, -1], [ 1, -3, -1]
+];
+
+
+// truncated tetrahedron 1
+var tt1_p = [
+              [-1,  3,  1], [-1,  3,  1], [-1,  3,  1], [ 1,  3, -1],
+[-3,  1,  1],               [-1,  1,  3], [-1,  1,  3],               [ 3,  1, -1],
+[-3,  1,  1], [-1,  1,  3],                             [ 1, -1,  3], [ 3, -1,  1],
+[-3,  1,  1], [-1,  1,  3],                             [ 1, -1,  3], [ 3, -1,  1],
+[-3, -1, -1],               [ 1, -1,  3], [ 1, -1,  3],               [ 3, -1,  1],
+              [-1, -3, -1], [ 1, -3,  1], [ 1, -3,  1], [ 1, -3,  1],
+
+              [-1,  3,  1], [ 1,  3, -1], [ 1,  3, -1], [ 1,  3, -1],
+[-3,  1,  1],               [ 1,  1, -3], [ 1,  1, -3],               [ 3,  1, -1],
+[-3, -1, -1], [-1, -1, -3],                             [ 1,  1, -3], [ 3,  1, -1],
+[-3, -1, -1], [-1, -1, -3],                             [ 1,  1, -3], [ 3,  1, -1],
+[-3, -1, -1],               [-1, -1, -3], [-1, -1, -3],               [ 3, -1,  1],
+              [-1, -3, -1], [-1, -3, -1], [-1, -3, -1], [ 1, -3,  1]
+
+];
+
+// truncated octahedron
+var toh_p = [
+              [-1,  2,  0], [ 0,  2,  1], [ 0,  2,  1], [ 1,  2,  0],
+[-2,  1,  0],               [ 0,  1,  2], [ 0,  1,  2],               [ 2,  1,  0],
+[-2,  0,  1], [-1,  0,  2],                             [ 1,  0,  2], [ 2,  0,  1],
+[-2,  0,  1], [-1,  0,  2],                             [ 1,  0,  2], [ 2,  0,  1],
+[-2, -1,  0],               [ 0, -1,  2], [ 0, -1,  2],               [ 2, -1,  0],
+              [-1, -2,  0], [ 0, -2,  1], [ 0, -2,  1], [ 1, -2,  0],
+
+              [-1,  2,  0], [ 0,  2, -1], [ 0,  2, -1], [ 1,  2,  0],
+[-2,  1,  0],               [ 0,  1, -2], [ 0,  1, -2],               [ 2,  1,  0],
+[-2,  0, -1], [-1,  0, -2],                             [ 1,  0, -2], [ 2,  0, -1],
+[-2,  0, -1], [-1,  0, -2],                             [ 1,  0, -2], [ 2,  0, -1],
+[-2, -1,  0],               [ 0, -1, -2], [ 0, -1, -2],               [ 2, -1,  0],
+              [-1, -2,  0], [ 0, -2, -1], [ 0, -2, -1], [ 1, -2,  0]
+];
+
+// cuboctahedron
+var coh_p = [
+              [-1,  1,  0], [ 0,  1,  1], [ 0,  1,  1], [ 1,  1,  0],
+[-1,  1,  0],               [ 0,  1,  1], [ 0,  1,  1],               [ 1,  1,  0],
+[-1,  0,  1], [-1,  0,  1],                             [ 1,  0,  1], [ 1,  0,  1],
+[-1,  0,  1], [-1,  0,  1],                             [ 1,  0,  1], [ 1,  0,  1],
+[-1, -1,  0],               [ 0, -1,  1], [ 0, -1,  1],               [ 1, -1,  0],
+              [-1, -1,  0], [ 0, -1,  1], [ 0, -1,  1], [ 1, -1,  0],
+
+              [-1,  1,  0], [ 0,  1, -1], [ 0,  1, -1], [ 1,  1,  0],
+[-1,  1,  0],               [ 0,  1, -1], [ 0,  1, -1],               [ 1,  1,  0],
+[-1,  0, -1], [-1,  0, -1],                             [ 1,  0, -1], [ 1,  0, -1],
+[-1,  0, -1], [-1,  0, -1],                             [ 1,  0, -1], [ 1,  0, -1],
+[-1, -1,  0],               [ 0, -1, -1], [ 0, -1, -1],               [ 1, -1,  0],
+              [-1, -1,  0], [ 0, -1, -1], [ 0, -1, -1], [ 1, -1,  0]
+];
+
+// truncated cube values
+var ee = Math.sqrt(2) - 1
+var nee = -1 * ee
+
+//
+var tc_p = [
+              [-1,  1, ee], [nee,  1,  1], [ee,  1,  1], [ 1,  1, ee],
+[-1,  1, ee],               [nee,  1,  1], [ee,  1,  1],               [ 1,  1, ee],
+[-1, ee,  1], [-1, ee,  1],                              [ 1, ee,  1], [ 1, ee,  1],
+[-1,nee,  1], [-1,nee,  1],                              [ 1,nee,  1], [ 1,nee,  1],
+[-1, -1, ee],               [nee, -1,  1], [ee, -1,  1],               [ 1, -1, ee],
+              [-1, -1, ee], [nee, -1,  1], [ee, -1,  1], [ 1, -1, ee],
+
+              [-1,  1,nee], [nee,  1, -1], [ee,  1, -1], [ 1,  1,nee],
+[-1,  1,nee],               [nee,  1, -1], [ee,  1, -1],               [ 1,  1,nee],
+[-1, ee, -1], [-1, ee, -1],                              [ 1, ee, -1], [ 1, ee, -1],
+[-1,nee, -1], [-1,nee, -1],                              [ 1,nee, -1], [ 1,nee, -1],
+[-1, -1,nee],               [nee, -1, -1], [ee, -1, -1],               [ 1, -1,nee],
+              [-1, -1,nee], [nee, -1, -1], [ee, -1, -1], [ 1, -1,nee]
+];
+
+// rhombicuboctahedron values
+var pp = Math.sqrt(2) + 1
+var npp = -1 * pp
+
+// rhombicuboctahedron truncated cube
+var rcoh_p = [
+              [-1, pp,  1], [-1, pp,  1], [ 1, pp,  1], [ 1, pp,  1],
+[npp,  1,  1],               [-1,  1, pp], [ 1,  1, pp],               [pp,  1,  1],
+[npp,  1,  1], [-1,  1, pp],                              [ 1,  1, pp], [pp,  1,  1],
+[npp, -1,  1], [-1, -1, pp],                              [ 1, -1, pp], [pp, -1,  1],
+[npp, -1,  1],               [-1, -1, pp], [ 1, -1, pp],               [pp, -1,  1],
+              [-1,npp,  1], [-1,npp,  1], [ 1,npp,  1], [ 1,npp,  1],
+
+              [-1, pp, -1], [-1, pp, -1], [ 1, pp, -1], [ 1, pp, -1],
+[npp,  1, -1],               [-1,  1,npp], [ 1,  1,npp],               [pp,  1, -1],
+[npp,  1, -1], [-1,  1,npp],                              [ 1,  1,npp], [pp,  1, -1],
+[npp, -1, -1], [-1, -1,npp],                              [ 1, -1,npp], [pp, -1, -1],
+[npp, -1, -1],               [-1, -1,npp], [ 1, -1,npp],               [pp, -1, -1],
+              [-1,npp, -1], [-1,npp, -1], [ 1,npp, -1], [ 1,npp, -1]
+];
+
+// snub cube values
+var tt = (1/3)*(1 + Math.pow(19 - 3*Math.sqrt(33), (1/3)) + Math.pow(19 + 3*Math.sqrt(33), (1/3)))
+var tr = 1 / tt
+var ntt = -1 * tt
+var ntr = -1 * tr
+
+// snub cube 0
+var sc0_p = [
+              [-1, tt, tr], [-1, tt, tr], [ tr, tt,  1], [ tr, tt,  1],
+[ntt, tr,  1],               [ntr,  1, tt], [ 1, tr, tt],               [tt,  1, tr],
+[ntt, tr,  1], [ntr,  1, tt],                              [ 1, tr, tt], [tt,  1, tr],
+[ntt, -1, tr], [-1,ntr, tt],                              [tr, -1, tt], [tt,ntr,  1],
+[ntt, -1, tr],               [-1,ntr, tt], [tr, -1, tt],               [tt,ntr,  1],
+              [ntr,ntt,  1], [ntr,ntt,  1], [ 1,ntt, tr], [ 1,ntt, tr],
+
+              [ntr, tt, -1], [ntr, tt, -1], [ 1, tt,ntr], [ 1, tt,ntr],
+[ntt,  1,ntr],               [-1, tr,ntt], [tr,  1,ntt],               [tt, tr, -1],
+[ntt,  1,ntr], [-1, tr,ntt],                              [tr,  1,ntt], [tt, tr, -1],
+[ntt,ntr, -1], [ntr, -1,ntt],                              [ 1,ntr,ntt], [tt, -1,ntr],
+[ntt,ntr, -1],               [ntr, -1,ntt], [ 1,ntr,ntt],               [tt, -1,ntr],
+              [-1,ntt,ntr], [-1,ntt,ntr], [ tr,ntt, -1], [ tr,ntt, -1]
+];
+
+// // snub cube 1
+// var sc1_p = [
+//               [ntr, tt,  1], [ntr, tt,  1], [ 1, tt, tr], [ 1, tt, tr],
+// [ntt,  1, tr],               [-1, tr, tt], [tr,  1, tt],               [tt, tr,  1],
+// [ntt,  1, tr], [-1, tr, tt],                              [tr,  1, tt], [tt, tr,  1],
+// [ntt,ntr,  1], [ntr, -1, tt],                              [ 1,ntr, tt], [tt, -1, tr],
+// [ntt,ntr,  1],               [ntr, -1, tt], [ 1,ntr, tt],               [tt, -1, tr],
+//               [-1,ntt, tr], [-1,ntt, tr], [ tr,ntt,  1], [ tr,ntt,  1],
+//
+//               [-1, tt,ntr], [-1, tt,ntr], [ tr, tt, -1], [ tr, tt, -1],
+// [ntt, tr, -1],               [ntr,  1,ntt], [ 1, tr,ntt],               [tt,  1,ntr],
+// [ntt, tr, -1], [ntr,  1,ntt],                              [ 1, tr,ntt], [tt,  1,ntr],
+// [ntt, -1,ntr], [-1,ntr,ntt],                              [tr, -1,ntt], [tt,ntr, -1],
+// [ntt, -1,ntr],               [-1,ntr,ntt], [tr, -1,ntt],               [tt,ntr, -1],
+//               [ntr,ntt, -1], [ntr,ntt, -1], [ 1,ntt,ntr], [ 1,ntt,ntr]
+//
+// ];
+
+// // snub cube 1 point order
+// var xtcoh_f = [
+//   [ 5,  9, 13, 17, 18, 14, 10,  6],
+//   [ 0,  1,  2,  3, 27, 26, 25, 24],
+//   [ 7, 11, 15, 19, 43, 39, 35, 31],
+//   [23, 22, 21, 20, 44, 45, 46, 47],
+//   [16, 12,  8,  4, 28, 32, 36, 40],
+//   [30, 34, 38, 42, 41, 37, 33, 29],
+//
+//   [ 1,  0,  4,  8,  9,  5],
+//   [11,  7,  3,  2,  6, 10],
+//   [22, 23, 19, 15, 14, 18],
+//   [12, 16, 20, 21, 17, 13],
+//   [26, 27, 31, 35, 34, 30],
+//   [39, 43, 47, 46, 42, 38],
+//   [45, 44, 40, 36, 37, 41],
+//   [32, 28, 24, 25, 29, 33],
+//
+//   [ 1,  5,  6,  2],
+//   [11, 10, 14, 15],
+//   [22, 18, 17, 21],
+//   [12, 13,  9,  8],
+//   [ 3,  7, 31, 27],
+//   [19, 23, 47, 43],
+//   [20, 16, 40, 44],
+//   [ 4,  0, 24, 28],
+//   [26, 30, 29, 25],
+//   [39, 38, 34, 35],
+//   [45, 41, 42, 46],
+//   [32, 33, 37, 36]
+// ];
+
+// snub cube 0 point order
+var tcoh_f = [
+  [ 5,  9, 13, 17, 18, 14, 10,  6],
+  [ 0,  1,  2,  3, 27, 26, 25, 24],
+  [ 7, 11, 15, 19, 43, 39, 35, 31],
+  [23, 22, 21, 20, 44, 45, 46, 47],
+  [16, 12,  8,  4, 28, 32, 36, 40],
+  [30, 34, 38, 42, 41, 37, 33, 29],
+
+  [ 1,  0,  4,  8,  9,  5],
+  [11,  7,  3,  2,  6, 10],
+  [22, 23, 19, 15, 14, 18],
+  [12, 16, 20, 21, 17, 13],
+  [26, 27, 31, 35, 34, 30],
+  [39, 43, 47, 46, 42, 38],
+  [45, 44, 40, 36, 37, 41],
+  [32, 28, 24, 25, 29, 33],
+
+  [ 2,  1,  5,  6],
+  [15, 11, 10, 14],
+  [21, 22, 18, 17],
+  [ 8, 12, 13,  9],
+  [27,  3,  7, 31],
+  [43, 19, 23, 47],
+  [44, 20, 16, 40],
+  [28,  4,  0, 24],
+  [25, 26, 30, 29],
+  [35, 39, 38, 34],
+  [46, 45, 41, 42],
+  [36, 32, 33, 37]
+];
+
+all_ph = [
+  tcoh_p, t0_p, t1_p, c_p, oh_p, tt0_p, tt1_p, toh_p, coh_p, tc_p, rcoh_p, sc0_p
+];
+
+var all_factors = [
+  0.5762904200088333, 1.442249570307408, 1.442249570307408, 1.0, 1.2114137285547597, 1.014287644623017, 1.014287644623017, 1.2599210498948732, 2.125317138365222, 2.0228466582009115, 0.9719040520063345, 1.004647983440087
+];
+
+for (var i = 0; i < all_ph.length; i++){
+  for (var j = 0; j < all_ph[i].length; j++){
+    for (var k = 0; k < all_ph[i][j].length; k++)
+      all_ph[i][j][k] = all_ph[i][j][k] * all_factors[i];
+  };
+};
+
+all_ph = [
+  t0_p, tt0_p, oh_p, tt1_p, t1_p, toh_p, coh_p, tc_p, c_p, tcoh_p, rcoh_p, sc0_p
+];
+
+current_ph = Math.floor(Math.random() * all_ph.length); // 0; // Math.floor(Math.random() * all_ph.length);
+next_ph = Math.floor(Math.random() * (all_ph.length - 1)); // 1; // Math.floor(Math.random() * (all_ph.length - 1));
+if(next_ph >= current_ph){
+  next_ph += 1;
+};
+
+init();
+animate();
+
+function init() {
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.z = 12.5;
+    scene.add(camera);
+
+    var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+    scene.add(ambientLight);
+
+    var light = new THREE.DirectionalLight( 0xffffff );
+    light.position.set( 0, 1, 1 ).normalize();
+    scene.add(light);
+
+    geometry = new THREE.Geometry();
+
+    tf = all_ph[current_ph];
+
+    for (var i = 0; i < tf.length; i++)
+    {
+        geometry.vertices.push(new THREE.Vector3(tf[i][0], tf[i][1], tf[i][2]));
+    };
+
+    ftf = tcoh_f;
+
+    for (var i = 0; i < ftf.length; i++)
+    {
+        if (ftf[i].length > 2){
+          for (var j = 0; j < ftf[i].length - 2; j++){
+
+    geometry.faces.push( new THREE.Face3( ftf[i][0], ftf[i][j+1], ftf[i][j+2] ) );
+
+        };
+      };
+    };
+
+    geometry.computeFaceNormals();
+    // geomety.verticesNeedUpdate = true;
+
+    material = new THREE.MeshNormalMaterial({color: 0x7777ff});
+    material.side = THREE.FrontSide;
+
+    mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    var webGLRenderer = new THREE.WebGLRenderer();
+    webGLRenderer.setClearColor(new THREE.Color(0xffaa55, 1.0));
+    webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+    webGLRenderer.shadowMapEnabled = true;
+    var canvasRenderer = new THREE.CanvasRenderer();
+    canvasRenderer.setSize(window.innerWidth, window.innerHeight);
+    renderer = webGLRenderer;
+
+    document.body.appendChild(renderer.domElement);
+
+
+}
+
+function animate() {
+
+    requestAnimationFrame(animate);
+    render();
+
+}
+
+function render() {
+
+  // console.log("" + current_ph + " " + change)
+
+		ticka = (ticka + 0.005) % 1;
+
+    if(last_tick > ticka){
+      change = !change
+      if(change == false){
+
+        for (var i = 0; i < mesh.geometry.vertices.length; i++){
+  mesh.geometry.vertices[i].x = all_ph[next_ph][i][0];
+  mesh.geometry.vertices[i].y = all_ph[next_ph][i][1];
+  mesh.geometry.vertices[i].z = all_ph[next_ph][i][2];
+
+        };
+
+        current_ph = next_ph;
+        next_ph = Math.floor(Math.random() * (all_ph.length - 1)); // (next_ph + 1) % all_ph.length; // Math.floor(Math.random() * (all_ph.length - 1));
+        if(next_ph >= current_ph){
+          next_ph += 1;
+        };
+      };
+    };
+
+    last_tick = ticka;
+
+    cos = (Math.cos(Math.PI * ticka) + 1) / 2;
+
+    // console.log(sin);
+
+    if(change){
+
+      for (var i = 0; i < mesh.geometry.vertices.length; i++){
+mesh.geometry.vertices[i].x = (all_ph[current_ph][i][0] * cos) + (all_ph[next_ph][i][0] * (1 - cos));
+
+mesh.geometry.vertices[i].y = (all_ph[current_ph][i][1] * cos) + (all_ph[next_ph][i][1] * (1 - cos));
+mesh.geometry.vertices[i].z = (all_ph[current_ph][i][2] * cos) + (all_ph[next_ph][i][2] * (1 - cos));
+
+      };
+    };
+mesh.geometry.verticesNeedUpdate = true;
+geometry.computeFaceNormals();
+mesh.geometry.normalsNeedUpdate = true;
+
+
+
+    mesh.rotation.x += 0.012;
+    mesh.rotation.y += 0.016;
+
+    renderer.render(scene, camera);
+
+};
+
+
+</script>
+
+</body>
+</html>
