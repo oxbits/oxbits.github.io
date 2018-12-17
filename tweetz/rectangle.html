@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+    <meta charset=utf-8>
+
+    <head>
+            <script src="https://js.pusher.com/4.3/pusher.min.js"></script>
+            <script>
+          
+              // Enable pusher logging - don't include this in production
+              Pusher.logToConsole = true;          
+          
+            async function getkey() {
+          
+          // read our JSON
+          let response = await fetch('https://s3.amazonaws.com/wwwhatevs/www/ppussheerkkeyy.json');
+          let jsun = await response.json();
+
+          console.log(jsun);
+          
+          
+              var pusher = new Pusher(jsun, { 
+                cluster: 'mt1',
+                forceTLS: true
+              });
+          
+              var channel = pusher.subscribe('tweetz-channel');
+              channel.bind('tweetz-event', function(data) {
+                // alert(JSON.stringify(data));
+                console.log(data)
+                update(data);
+              });
+          
+          return jsun;
+          }
+          
+          getkey();
+          
+          
+            async function invoke() {
+          
+          
+          let rresponse = await fetch('https://q7acknxzd5.execute-api.us-east-1.amazonaws.com/dev/kick', {mode: 'no-cors'});
+
+        }
+          
+          invoke();
+                    
+            </script>
+
+<style>
+
+        text {
+          font: bold 16px monospace;
+        }
+
+        .word_score {
+          font: bold 16px monospace;
+        }
+
+        h1 {
+          font: bold;
+          font-family: monospace;
+          color: #fff;
+        }
+
+        body {
+          background-color: #000;
+        }
+        
+        </style>
+
+          </head>
+
+
+<body align="center">
+  <h1>TWEETZ!:</h1>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <!-- .attrs() -->
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+    <script>
+
+var deeta_a = [];
+var deeta0 = [['a', 100], ['b', 200], ['c', 300]];
+var deeta1 = [['d', 300], ['a', 100], ['e', 100], ['g', 400]];
+var deeta2 = [['f', 200], ['d', 100], ['a', 100]];
+
+// var deeta = deeta0
+
+        var svg = d3.select('body')
+                    .append('svg')
+                    .attrs({ width: 600, height: 500 });
+
+svg.append("text")
+    .attr("x", 100)
+    .attr("y", 100)
+    // .attr("dy", ".35em")
+    .text("WORD");
+
+function update(deeta) {
+
+var rex = svg.selectAll('rect').data(deeta, function(d) { return d[0]; })
+// var rex = svg.selectAll('rect').data(deeta, function(d) { return d; })
+
+rex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  rex.attr("x", 20)
+    .transition()
+      .attr("y", function(d, i){return( i * 40 )})
+    //   .attr("width", function(d){return(d[1])}); 
+    //   .attr("width", function(d){return(d.length * 100)}); 
+    .attr("width", function(d){return(d[2] * 500)}); 
+
+
+
+rex.enter()
+      .append("rect")
+      .on("click", function(d) {
+  window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
+})
+      .attr("fill", '#00ff00').transition()
+      .attr("y", function(d, i){return( i * 40 )})
+      .attr("x", 20)
+    //   .attr("width", function(d){return(d[1])}) 
+    .attr("width", function(d){return(d.length * 10)}) 
+    .attr("width", function(d){return(d[2] * 500)}) 
+      .attr("height", 20)
+    //   .style("stroke", "rgb(255,0,0)")
+    //   .style("stroke-width", 2)
+
+
+//   // ENTER new elements present in new data.
+//   rex.enter().append("text")
+//       .attr("class", "enter")
+//       .attr("dy", ".35em")
+//       .attr("y", -60)
+//       .attr("x", function(d, i) { return i * 32; })
+//       .style("fill-opacity", 1e-6)
+//       .text(function(d) { return d; })
+//     .transition(t)
+//       .attr("y", 0)
+//       .style("fill-opacity", 1);
+
+
+var tex = svg.selectAll('.word_score').data(deeta, function(d) { return d[0]; });
+// var tex = svg.selectAll('text').data(deeta, function(d) { return d; });
+    //   .enter()
+    //   .append("text")
+    //   .attr("fill", '#ff0000').transition()
+    //   .attr("y", function(d, i){return( i * 40 + 15 )})
+    //   .attr("x", 25)
+    // //   .attr("width", function(d){return(d)}) 
+    // //   .attr("height", 20)
+    // .text(function(d) { return d[0] + ' ' + d[1]; })
+
+tex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  tex.attr("x", 25)
+    .transition()
+    .attr("y", function(d, i){return( i * 40 + 15 )})
+    .text(function(d) { return d[1] + ' ' + d[2]; });
+    //   .attr("width", function(d){return(d[1])}); 
+
+
+tex.enter()
+.append("text")
+.attr("class", "word_score")
+.on("click", function(d) {
+  window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
+})
+      .attr("fill", '#ff0000').transition()
+      .attr("y", function(d, i){return( i * 40 + 15 )})
+      .attr("x", 25)
+    //   .attr("width", function(d){return(d)}) 
+    //   .attr("height", 20)
+    // .text(function(d) { return d[0] + ' ' + d[1]; });
+    // .text(function(d) { return d + ' ' + d.length; });
+    .text(function(d) { return d[1] + ' ' + d[2]; });
+
+};
+
+update(deeta_a);
+        // svg.append('rect')
+        //    .attrs({ x: 10, y: 10, width: 80, height: 80, fill: 'red' })
+        //    .transition()
+        //    .duration(5000)
+        //    .attrs({ x: 460, y: 150, width: 40, height: 40, fill: 'blue' });
+    </script>
+</body>
+</html>
