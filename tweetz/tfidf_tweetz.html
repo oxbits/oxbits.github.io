@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+    <meta charset=utf-8>
+
+    <head>
+            <script src="https://js.pusher.com/4.3/pusher.min.js"></script>
+            <script>
+
+function toggle(b){b.value=(b.value=="PAUSED")?"PAUSE":"PAUSED";};
+
+              // Enable pusher logging - don't include this in production
+              Pusher.logToConsole = true;          
+          
+            async function getkey() {
+          
+          // read our JSON
+          let response = await fetch('https://s3.amazonaws.com/wwwhatevs/www/ppussheerkkeyy.json');
+          let jsun = await response.json();
+
+          console.log(jsun);
+          
+          
+              var pusher = new Pusher(jsun, { 
+                cluster: 'mt1',
+                forceTLS: true
+              });
+          
+              var channel = pusher.subscribe('tweetz-channel');
+              channel.bind('tweetz-event', function(data) {
+                // alert(JSON.stringify(data));
+                console.log(data)
+                if (document.getElementById('button1').value != "PAUSED"){
+                  update(data);
+                };
+              });
+          
+          return jsun;
+          }
+          
+          getkey();
+          
+          
+            async function invoke() {
+          
+          
+          let rresponse = await fetch('https://q7acknxzd5.execute-api.us-east-1.amazonaws.com/dev/kick', {mode: 'no-cors'});
+
+        }
+          
+          invoke();
+                    
+            </script>
+
+<style>
+
+        text {
+          font: bold 16px monospace;
+          color: #ff0;
+        }
+
+        .word_score {
+          font: bold 16px monospace;
+        }
+
+        h1 {
+          font: bold;
+          font-family: monospace;
+          color: #ff0;
+        }
+
+        body {
+          background-color: #00f;
+          font-family: monospace;
+          color: #ff0;
+        }
+
+        .cyan {
+          color: #0ff;
+        }
+
+        .magenta {
+          color: #f0f;
+        }
+        
+        </style>
+
+          </head>
+
+
+<body align="center">
+  <h1>TWEETZ!: ☠☢⚠☣ [warning: NSFW?] ☣⚠☢☠<br />tf-idf annalysis of live twitter firehose sample</h1>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+    <script>
+
+        var svg = d3.select('body')
+                    .append('svg')
+                    .attrs({ width: 600, height: 500 });
+
+svg.append("text")
+    .attr("x", 20)
+    .attr("y", 15)
+    .attr("fill", '#ffff00').transition()
+    // .attr("dy", ".35em")
+    .text("⬇ ⬇  click | LAST 10,000 TWEETZ [top unique]:");
+
+svg.append("text")
+    .attr("x", 20)
+    .attr("y", 175)
+    .attr("fill", '#ffff00').transition()
+    // .attr("dy", ".35em")
+    .text("⬇ ⬇ LAST 1,000 TWEETZ [top unique]:");
+
+svg.append("text")
+    .attr("x", 20)
+    .attr("y", 335)
+    .attr("fill", '#ffff00').transition()
+    // .attr("dy", ".35em")
+    .text("⬇ ⬇ LAST 100 TWEETZ [top unique]:");
+
+function update(deeta) {
+
+var rex = svg.selectAll('.old_rect').data(deeta, function(d) { return d[0]; })
+// var rex = svg.selectAll('rect').data(deeta, function(d) { return d; })
+
+rex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  rex.attr("x", 70)
+    .transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+    //   .attr("width", function(d){return(d[1])}); 
+    //   .attr("width", function(d){return(d.length * 100)}); 
+    .attr("width", function(d){return(d[2] * 500)}); 
+
+
+
+rex.enter()
+      .append("rect")
+      .attr("class", "old_rect")
+//       .on("click", function(d) {
+//   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
+// })
+      .attr("fill", '#00ff00').transition()
+      .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+      .attr("x", 70)
+    //   .attr("width", function(d){return(d[1])}) 
+    // .attr("width", function(d){return(d.length * 10)}) 
+    .attr("width", function(d){return(d[2] * 500)}) 
+      .attr("height", 20)
+    //   .style("stroke", "rgb(255,0,0)")
+    //   .style("stroke-width", 2)
+
+
+    var qex = svg.selectAll('.new_rect').data(deeta, function(d) { return d[0]; })
+// var qex = svg.selectAll('rect').data(deeta, function(d) { return d; })
+
+qex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  qex.attr("x", 20)
+    .transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+    //   .attr("width", function(d){return(d[1])}); 
+    //   .attr("width", function(d){return(d.length * 100)}); 
+    .attr("width", 20); 
+
+
+
+qex.enter()
+      .append("rect")
+      .attr("class", "new_rect")
+      .on("click", function(d) {
+  window.open("https://twitter.com/i/web/status/" + d[3], "_blank");
+})
+      .attr("fill", '#00ffff').transition()
+      .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+      .attr("x", 20)
+    //   .attr("width", function(d){return(d[1])}) 
+    // .attr("width", function(d){return(d.length * 10)}) 
+    .attr("width", 20) 
+      .attr("height", 20)
+    //   .style("stroke", "rgb(255,0,0)")
+    //   .style("stroke-width", 2)
+
+
+    var pex = svg.selectAll('.nu_rect').data(deeta, function(d) { return d[0]; })
+// var pex = svg.selectAll('rect').data(deeta, function(d) { return d; })
+
+pex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  pex.attr("x", 45)
+    .transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+    //   .attr("width", function(d){return(d[1])}); 
+    //   .attr("width", function(d){return(d.length * 100)}); 
+    .attr("width", 20); 
+
+
+
+pex.enter()
+      .append("rect")
+      .attr("class", "nu_rect")
+      .on("click", function(d) {
+  window.open("https://twitter.com/i/web/status/" + d[4], "_blank");
+})
+      .attr("fill", '#ff00ff').transition()
+      .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+      .attr("x", 45)
+    //   .attr("width", function(d){return(d[1])}) 
+    // .attr("width", function(d){return(d.length * 10)}) 
+    .attr("width", 20) 
+      .attr("height", 20)
+    //   .style("stroke", "rgb(255,0,0)")
+    //   .style("stroke-width", 2)
+
+
+    var vex = svg.selectAll('.word_bar').data(deeta, function(d) { return d[0]; })
+// var vex = svg.selectAll('rect').data(deeta, function(d) { return d; })
+
+vex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  vex.attr("x", 70)
+    .transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+    //   .attr("width", function(d){return(d[1])}); 
+    //   .attr("width", function(d){return(d.length * 100)}); 
+    .attr("width", function(d){return(d[5] * 500)}); 
+
+
+
+vex.enter()
+      .append("rect")
+      .attr("class", "word_bar")
+//       .on("click", function(d) {
+//   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
+// })
+      .attr("fill", '#ffff00').transition()
+      .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
+      .attr("x", 70)
+    //   .attr("width", function(d){return(d[1])}) 
+    // .attr("width", function(d){return(d.length * 10)}) 
+    .attr("width", function(d){return(d[5] * 500)}) 
+      .attr("height", 20)
+    //   .style("stroke", "rgb(255,0,0)")
+    //   .style("stroke-width", 2)
+
+
+
+var tex = svg.selectAll('.word_score').data(deeta, function(d) { return d[0]; });
+// var tex = svg.selectAll('text').data(deeta, function(d) { return d; });
+    //   .enter()
+    //   .append("text")
+    //   .attr("fill", '#ff0000').transition()
+    //   .attr("y", function(d, i){return( i * 40 + 15 )})
+    //   .attr("x", 25)
+    // //   .attr("width", function(d){return(d)}) 
+    // //   .attr("height", 20)
+    // .text(function(d) { return d[0] + ' ' + d[1]; })
+
+tex.exit()
+      .remove();
+
+  // UPDATE old elements present in new data.
+  tex.attr("x", 75)
+    .transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 + 15 )})
+    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot:' + d[2].toString().substring(0,6) ; });
+    //   .attr("width", function(d){return(d[1])}); 
+
+
+tex.enter()
+.append("text")
+.attr("class", "word_score")
+// .on("click", function(d) {
+//   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
+// })
+      .attr("fill", '#ff0000').transition()
+    .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 + 15 )})
+      .attr("x", 75)
+    //   .attr("width", function(d){return(d)}) 
+    //   .attr("height", 20)
+    // .text(function(d) { return d[0] + ' ' + d[1]; });
+    // .text(function(d) { return d + ' ' + d.length; });
+    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot:' + d[2].toString().substring(0,6) ; });
+
+};
+
+var deeta_a = []
+
+update(deeta_a);
+        // svg.append('rect')
+        //    .attrs({ x: 10, y: 10, width: 80, height: 80, fill: 'red' })
+        //    .transition()
+        //    .duration(5000)
+        //    .attrs({ x: 460, y: 150, width: 40, height: 40, fill: 'blue' });
+    </script>
+    <br />
+    <input type="button" value="PAUSE" id="button1" onclick="toggle(this)" />
+    <br />
+    <br />
+    ☠☢⚠☣ warning: tweetz may not be suitable for work ☣⚠☢☠
+    <br />
+    click on the <span class="cyan">cyan ■</span> &amp; <span class="magenta">magenta ■</span> regular tetragonz ■ for each tweet
+    <br />
+    pause button will ignore new data coming in &amp; not update chart
+    <br />
+    <br />
+    text on bar: 
+    <li>word with top tf-idf value between tweetz</li>
+    <li>top tf-idf word value between tweetz</li>
+    <li>dot product of tweetz' tfidf vectorz</li>
+
+    <br />
+    "top unique":
+    <br />
+    tweet with highest sum of tfidf dot productz with corpus of last 10,000 tweetz
+    <br />
+    coupled with tweet with highest tfidf dot product with first tweet
+    <br />
+    "unique": no repeated tweetz or wordz
+    <br />
+    <br />
+    *last N: top unique from the last N compared to entire corpus of last 10,000 tweetz
+    <br />
+    <br />
+    ** this app only collects tweetz when page is active in the browser
+    <br />
+    ** last 10,000 tweetz are only while it is running
+    <br />
+    <br />
+    [work in progress: how to surface "random &amp; compelling" tfidf examplez]
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    
+</body>
+</html>
