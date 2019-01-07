@@ -124,6 +124,9 @@ var rex = svg.selectAll('.old_rect').data(deeta, function(d) { return d[0]; })
 // var rex = svg.selectAll('rect').data(deeta, function(d) { return d; })
 
 rex.exit()
+.transition()
+      .attr("x", 500)
+      .style("fill-opacity", 1e-6)
       .remove();
 
   // UPDATE old elements present in new data.
@@ -142,13 +145,17 @@ rex.enter()
 //       .on("click", function(d) {
 //   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
 // })
-      .attr("fill", '#00ff00').transition()
+      .attr("fill", '#00ff00')
       .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
-      .attr("x", 70)
+      .attr("x", -500)
     //   .attr("width", function(d){return(d[1])}) 
     // .attr("width", function(d){return(d.length * 10)}) 
     .attr("width", function(d){return(d[2] * 500)}) 
       .attr("height", 20)
+      .style("fill-opacity", 1e-6)
+      .transition()
+      .attr("x", 70)
+      .style("fill-opacity", 1);
     //   .style("stroke", "rgb(255,0,0)")
     //   .style("stroke-width", 2)
 
@@ -157,6 +164,9 @@ rex.enter()
 // var qex = svg.selectAll('rect').data(deeta, function(d) { return d; })
 
 qex.exit()
+      .transition()
+      .attr("x", 500)
+      .style("fill-opacity", 1e-6)
       .remove();
 
   // UPDATE old elements present in new data.
@@ -175,13 +185,18 @@ qex.enter()
       .on("click", function(d) {
   window.open("https://twitter.com/i/web/status/" + d[3], "_blank");
 })
-      .attr("fill", '#00ffff').transition()
+      .attr("fill", '#00ffff')//.transition()
       .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
-      .attr("x", 20)
+      .attr("x", -500)
     //   .attr("width", function(d){return(d[1])}) 
     // .attr("width", function(d){return(d.length * 10)}) 
     .attr("width", 20) 
       .attr("height", 20)
+      .style("fill-opacity", 1e-6)
+      .transition()
+      .attr("x", 20)
+      .style("fill-opacity", 1);
+
     //   .style("stroke", "rgb(255,0,0)")
     //   .style("stroke-width", 2)
 
@@ -190,6 +205,9 @@ qex.enter()
 // var pex = svg.selectAll('rect').data(deeta, function(d) { return d; })
 
 pex.exit()
+.transition()
+      .attr("x", 500)
+      .style("fill-opacity", 1e-6)
       .remove();
 
   // UPDATE old elements present in new data.
@@ -208,13 +226,18 @@ pex.enter()
       .on("click", function(d) {
   window.open("https://twitter.com/i/web/status/" + d[4], "_blank");
 })
-      .attr("fill", '#ff00ff').transition()
+      .attr("fill", '#ff00ff')//.transition()
       .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
-      .attr("x", 45)
+      .attr("x", -500)
     //   .attr("width", function(d){return(d[1])}) 
     // .attr("width", function(d){return(d.length * 10)}) 
     .attr("width", 20) 
       .attr("height", 20)
+      .style("fill-opacity", 1e-6)
+      .transition()
+      .attr("x", 45)
+      .style("fill-opacity", 1);
+
     //   .style("stroke", "rgb(255,0,0)")
     //   .style("stroke-width", 2)
 
@@ -223,6 +246,9 @@ pex.enter()
 // var vex = svg.selectAll('rect').data(deeta, function(d) { return d; })
 
 vex.exit()
+.transition()
+      .attr("x", 500)
+      .style("fill-opacity", 1e-6)
       .remove();
 
   // UPDATE old elements present in new data.
@@ -241,13 +267,18 @@ vex.enter()
 //       .on("click", function(d) {
 //   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
 // })
-      .attr("fill", '#ffff00').transition()
+      .attr("fill", '#ffff00')//.transition()
       .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 )})
-      .attr("x", 70)
+      .attr("x", -500)
     //   .attr("width", function(d){return(d[1])}) 
     // .attr("width", function(d){return(d.length * 10)}) 
     .attr("width", function(d){return(d[5] * 500)}) 
       .attr("height", 20)
+      .style("fill-opacity", 1e-6)
+      .transition()
+      .attr("x", 70)
+      .style("fill-opacity", 1);
+
     //   .style("stroke", "rgb(255,0,0)")
     //   .style("stroke-width", 2)
 
@@ -265,13 +296,16 @@ var tex = svg.selectAll('.word_score').data(deeta, function(d) { return d[0]; })
     // .text(function(d) { return d[0] + ' ' + d[1]; })
 
 tex.exit()
+.transition()
+      .attr("x", 500)
+      .style("fill-opacity", 1e-6)
       .remove();
 
   // UPDATE old elements present in new data.
   tex.attr("x", 75)
     .transition()
     .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 + 15 )})
-    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot:' + d[2].toString().substring(0,6) ; });
+    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot: ' + d[2].toString().substring(0,6) ; });
     //   .attr("width", function(d){return(d[1])}); 
 
 
@@ -281,14 +315,19 @@ tex.enter()
 // .on("click", function(d) {
 //   window.open("https://twitter.com/i/web/status/" + d[0].split('_')[1], "_blank");
 // })
-      .attr("fill", '#ff0000').transition()
+      .attr("fill", '#ff0000')//.transition()
     .attr("y", function(d, i){return( (i + Math.floor(i / 3) + 1) * 40 + 15 )})
-      .attr("x", 75)
+      .attr("x", -500)
     //   .attr("width", function(d){return(d)}) 
     //   .attr("height", 20)
     // .text(function(d) { return d[0] + ' ' + d[1]; });
     // .text(function(d) { return d + ' ' + d.length; });
-    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot:' + d[2].toString().substring(0,6) ; });
+    .text(function(d) { return d[1] + ': ' + d[5].toString().substring(0,6) + ' | dot:' + d[2].toString().substring(0,6) ; })
+          .style("fill-opacity", 1e-6)
+      .transition()
+      .attr("x", 75)
+      .style("fill-opacity", 1);
+
 
 };
 
@@ -332,8 +371,9 @@ update(deeta_a);
     <br />
     ** this app only collects tweetz when page is active in the browser
     <br />
-    ** last 10,000 tweetz are only while it is running
+    *** last 10,000 tweetz are only while it is running
     <br />
+    **** currently focusing on tweetz labeled english language
     <br />
     [work in progress: how to surface "random &amp; compelling" tfidf examplez]
     <br />
